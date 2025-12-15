@@ -40,4 +40,22 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     rc.qrc
 
-DISTFILES +=
+DISTFILES += \
+    config.ini
+
+# 复制配置文件到构建目录
+config_file.target = config.ini
+config_file.commands = $(COPY_FILE) \"$$PWD/config.ini\" \"$$OUT_PWD/$$DESTDIR/\"
+config_file.depends = $$PWD/config.ini
+
+# 创建目标目录
+create_dir.commands = $(MKDIR) \"$$OUT_PWD/$$DESTDIR\"
+create_dir.target = directory
+
+# 添加自定义目标
+QMAKE_EXTRA_TARGETS += create_dir config_file
+
+# 确保在构建前创建目录，在构建后复制文件
+PRE_TARGETDEPS += directory
+POST_TARGETDEPS += config.ini
+

@@ -9,7 +9,9 @@
 #include <memory>
 #include <iostream>
 #include <mutex>
-
+#include <QJsonObject>
+#include <QDir>
+#include <QSettings>
 
 #include "QStyle"
 
@@ -29,5 +31,7 @@ enum ErrorCodes {
     ERR_JSON = 1,  // json 解析失败
     ERR_NETWORK = 2,  // 网络错误
 };
+
+extern QString gate_url_prefix;
 
 #endif // GLOBAL_H
