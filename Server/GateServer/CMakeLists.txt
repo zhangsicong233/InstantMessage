@@ -46,3 +46,6 @@ target_link_libraries(gateserver PRIVATE Threads::Threads)
 
 # 定义宏
 target_compile_definitions(gateserver PRIVATE BOOST_ASIO_STANDALONE=0)
+
+# 复制配置文件到构建目录
+configure_file(config.ini config.ini COPYONLY)

@@ -11,7 +11,6 @@
 #include "Singleton.hpp"
 #include "const.h"
 #include "message.grpc.pb.h"
-#include "message.pb.h"
 
 class VerifyGrpcClient : public Singleton<VerifyGrpcClient> {
   friend class Singleton<VerifyGrpcClient>;
