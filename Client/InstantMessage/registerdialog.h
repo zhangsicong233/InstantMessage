@@ -19,10 +19,12 @@ public:
     ~RegisterDialog();
 
 private slots:
-    void on_get_Code_clicked();
+    void on_get_code_clicked();
     void slot_res_mod_finish(ReqId id, QString res, ErrorCodes err);
 
-private:
+    void on_sure_btn_clicked();
+
+   private:
     Ui::RegisterDialog *ui;
     QMap<ReqId, std::function<void(const QJsonObject&)>> _handlers;
 

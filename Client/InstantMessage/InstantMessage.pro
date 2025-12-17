@@ -5,6 +5,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 RC_ICONS = Message.ico
 DESTDIR = ./bin
 
+UI_DIR = ./
+
 CONFIG += c++17
 
 # You can make your code fail to compile if it uses deprecated APIs.
