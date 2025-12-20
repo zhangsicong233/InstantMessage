@@ -96,7 +96,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="user_Label">
+        <widget class="QLabel" name="user_label">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -115,7 +115,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="user_Edit">
+        <widget class="QLineEdit" name="user_edit">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -135,7 +135,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="pass_Label">
+        <widget class="QLabel" name="pass_label">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -154,7 +154,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="pass_Edit">
+        <widget class="QLineEdit" name="pass_edit">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -187,7 +187,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="forget_Label">
+        <widget class="ClickedLabel" name="forget_label">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -239,7 +239,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="login_Btn">
+        <widget class="QPushButton" name="login_btn">
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -282,7 +282,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="reg_Btn">
+        <widget class="QPushButton" name="reg_btn">
          <property name="minimumSize">
           <size>
            <width>100</width>
@@ -329,6 +329,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ClickedLabel</class>
+   <extends>QLabel</extends>
+   <header>clickedlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="rc.qrc"/>
  </resources>
