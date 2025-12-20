@@ -15,4 +15,5 @@ LoginDialog::LoginDialog(QWidget* parent)
 LoginDialog::~LoginDialog() {
   qDebug() << "destruct LoginDlg";
 
-  delete ui; }
+  delete ui;
+}

@@ -39,7 +39,7 @@ class RegisterDialog : public QDialog {
   bool checkVarifyValid();
   bool checkConfirmValid();
   void showTip(QString str, bool b_Ok);
-  void AddTipErr(TipErr te,QString tips);
+  void AddTipErr(TipErr te, QString tips);
   void DelTipErr(TipErr te);
   void ChangeTipPage();
 

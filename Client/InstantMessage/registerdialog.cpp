@@ -19,40 +19,35 @@ RegisterDialog::RegisterDialog(QWidget* parent)
   initHttpHandlers();
   ui->err_tip->clear();
 
-  connect(ui->user_edit,&QLineEdit::editingFinished,this,[this](){
-    checkUserValid();
-  });
+  connect(ui->user_edit, &QLineEdit::editingFinished, this,
+          [this]() { checkUserValid(); });
 
-  connect(ui->email_edit, &QLineEdit::editingFinished, this, [this](){
-    checkEmailValid();
-  });
+  connect(ui->email_edit, &QLineEdit::editingFinished, this,
+          [this]() { checkEmailValid(); });
 
-  connect(ui->pass_edit, &QLineEdit::editingFinished, this, [this](){
-    checkPassValid();
-  });
+  connect(ui->pass_edit, &QLineEdit::editingFinished, this,
+          [this]() { checkPassValid(); });
 
-  connect(ui->confirm_edit, &QLineEdit::editingFinished, this, [this](){
-    checkConfirmValid();
-  });
+  connect(ui->confirm_edit, &QLineEdit::editingFinished, this,
+          [this]() { checkConfirmValid(); });
 
-  connect(ui->varify_edit, &QLineEdit::editingFinished, this, [this](){
-    checkVarifyValid();
-  });
+  connect(ui->varify_edit, &QLineEdit::editingFinished, this,
+          [this]() { checkVarifyValid(); });
 
   ui->pass_visible->setCursor(Qt::PointingHandCursor);
   ui->confirm_visible->setCursor(Qt::PointingHandCursor);
 
-  ui->pass_visible->SetState("unvisible","unvisible_hover","","visible",
-                             "visible_hover","");
-  ui->confirm_visible->SetState("unvisible","unvisible_hover","","visible",
-                                "visible_hover","");
+  ui->pass_visible->SetState("unvisible", "unvisible_hover", "", "visible",
+                             "visible_hover", "");
+  ui->confirm_visible->SetState("unvisible", "unvisible_hover", "", "visible",
+                                "visible_hover", "");
 
-  //连接点击事件
+  // 连接点击事件
   connect(ui->pass_visible, &ClickedLabel::clicked, this, [this]() {
     auto state = ui->pass_visible->GetCurState();
-    if(state == ClickLbState::Normal){
+    if (state == ClickLbState::Normal) {
       ui->pass_edit->setEchoMode(QLineEdit::Password);
-    }else{
+    } else {
       ui->pass_edit->setEchoMode(QLineEdit::Normal);
     }
     qDebug() << "Label was clicked!";
@@ -60,9 +55,9 @@ RegisterDialog::RegisterDialog(QWidget* parent)
 
   connect(ui->confirm_visible, &ClickedLabel::clicked, this, [this]() {
     auto state = ui->confirm_visible->GetCurState();
-    if(state == ClickLbState::Normal){
+    if (state == ClickLbState::Normal) {
       ui->confirm_edit->setEchoMode(QLineEdit::Password);
-    }else{
+    } else {
       ui->confirm_edit->setEchoMode(QLineEdit::Normal);
     }
     qDebug() << "Label was clicked!";
@@ -71,8 +66,8 @@ RegisterDialog::RegisterDialog(QWidget* parent)
   // 创建定时器
   _countdown_timer = new QTimer(this);
   // 连接信号和槽
-  connect(_countdown_timer, &QTimer::timeout, [this](){
-    if(_countdown==0){
+  connect(_countdown_timer, &QTimer::timeout, [this]() {
+    if (_countdown == 0) {
       _countdown_timer->stop();
       emit sigSwitchLogin();
 
@@ -169,9 +164,8 @@ void RegisterDialog::initHttpHandlers() {
   });
 }
 
-bool RegisterDialog::checkUserValid()
-{
-  if(ui->user_edit->text() == ""){
+bool RegisterDialog::checkUserValid() {
+  if (ui->user_edit->text() == "") {
     AddTipErr(TipErr::TIP_USER_ERR, tr("用户名不能为空"));
 
     return false;
@@ -182,15 +176,14 @@ bool RegisterDialog::checkUserValid()
   return true;
 }
 
-bool RegisterDialog::checkEmailValid()
-{
-  //验证邮箱的地址正则表达式
+bool RegisterDialog::checkEmailValid() {
+  // 验证邮箱的地址正则表达式
   auto email = ui->email_edit->text();
   // 邮箱地址的正则表达式
   QRegularExpression regex(R"((\w+)(\.|_)?(\w*)@(\w+)(\.(\w+))+)");
-  bool match = regex.match(email).hasMatch(); // 执行正则表达式匹配
-  if(!match){
-    //提示邮箱不正确
+  bool match = regex.match(email).hasMatch();  // 执行正则表达式匹配
+  if (!match) {
+    // 提示邮箱不正确
     AddTipErr(TipErr::TIP_EMAIL_ERR, tr("邮箱地址不正确"));
 
     return false;
@@ -201,48 +194,47 @@ bool RegisterDialog::checkEmailValid()
   return true;
 }
 
-bool RegisterDialog::checkPassValid()
-{
+bool RegisterDialog::checkPassValid() {
   auto pass = ui->pass_edit->text();
   auto confirm = ui->confirm_edit->text();
 
-  if(pass.length() < 6 || pass.length()>15){
-    //提示长度不准确
+  if (pass.length() < 6 || pass.length() > 15) {
+    // 提示长度不准确
     AddTipErr(TipErr::TIP_PWD_ERR, tr("密码长度应为6~15"));
 
     return false;
   }
 
-          // 创建一个正则表达式对象，按照上述密码要求
-          // 这个正则表达式解释：
-          // ^[a-zA-Z0-9!@#$%^&*]{6,15}$ 密码长度至少6，可以是字母、数字和特定的特殊字符
+  // 创建一个正则表达式对象，按照上述密码要求
+  // 这个正则表达式解释：
+  // ^[a-zA-Z0-9!@#$%^&*]{6,15}$ 密码长度至少6，可以是字母、数字和特定的特殊字符
   QRegularExpression regExp("^[a-zA-Z0-9!@#$%^&*.]{6,15}$");
   bool match = regExp.match(pass).hasMatch();
-  if(!match){
-    //提示字符非法
+  if (!match) {
+    // 提示字符非法
     AddTipErr(TipErr::TIP_PWD_ERR, tr("不能包含非法字符"));
 
-    return false;;
+    return false;
+    ;
   }
 
   DelTipErr(TipErr::TIP_PWD_ERR);
 
-  if(pass != confirm){
-    //提示密码不匹配
+  if (pass != confirm) {
+    // 提示密码不匹配
     AddTipErr(TipErr::TIP_PWD_CONFIRM, tr("密码和确认密码不匹配"));
 
     return false;
-  }else{
+  } else {
     DelTipErr(TipErr::TIP_PWD_CONFIRM);
   }
 
   return true;
 }
 
-bool RegisterDialog::checkVarifyValid()
-{
+bool RegisterDialog::checkVarifyValid() {
   auto pass = ui->varify_edit->text();
-  if(pass.isEmpty()){
+  if (pass.isEmpty()) {
     AddTipErr(TipErr::TIP_VARIFY_ERR, tr("验证码不能为空"));
 
     return false;
@@ -253,24 +245,23 @@ bool RegisterDialog::checkVarifyValid()
   return true;
 }
 
-bool RegisterDialog::checkConfirmValid()
-{
+bool RegisterDialog::checkConfirmValid() {
   auto pass = ui->pass_edit->text();
   auto confirm = ui->confirm_edit->text();
-  if(confirm.length() < 6 || confirm.length() > 15 ){
-    //提示长度不准确
+  if (confirm.length() < 6 || confirm.length() > 15) {
+    // 提示长度不准确
     AddTipErr(TipErr::TIP_CONFIRM_ERR, tr("密码长度应为6~15"));
 
     return false;
   }
 
-          // 创建一个正则表达式对象，按照上述密码要求
-          // 这个正则表达式解释：
-          // ^[a-zA-Z0-9!@#$%^&*]{6,15}$ 密码长度至少6，可以是字母、数字和特定的特殊字符
+  // 创建一个正则表达式对象，按照上述密码要求
+  // 这个正则表达式解释：
+  // ^[a-zA-Z0-9!@#$%^&*]{6,15}$ 密码长度至少6，可以是字母、数字和特定的特殊字符
   QRegularExpression regExp("^[a-zA-Z0-9!@#$%^&*.]{6,15}$");
   bool match = regExp.match(confirm).hasMatch();
-  if(!match){
-    //提示字符非法
+  if (!match) {
+    // 提示字符非法
     AddTipErr(TipErr::TIP_CONFIRM_ERR, tr("不能包含非法字符"));
 
     return false;
@@ -278,12 +269,12 @@ bool RegisterDialog::checkConfirmValid()
 
   DelTipErr(TipErr::TIP_CONFIRM_ERR);
 
-  if(pass != confirm){
-    //提示密码不匹配
+  if (pass != confirm) {
+    // 提示密码不匹配
     AddTipErr(TipErr::TIP_PWD_CONFIRM, tr("确认密码和密码不匹配"));
 
     return false;
-  }else{
+  } else {
     DelTipErr(TipErr::TIP_PWD_CONFIRM);
   }
 
@@ -302,16 +293,14 @@ void RegisterDialog::showTip(QString str, bool b_Ok) {
   repolish(ui->err_tip);
 }
 
-void RegisterDialog::AddTipErr(TipErr te, QString tips)
-{
+void RegisterDialog::AddTipErr(TipErr te, QString tips) {
   _tip_errs[te] = tips;
   showTip(tips, false);
 }
 
-void RegisterDialog::DelTipErr(TipErr te)
-{
+void RegisterDialog::DelTipErr(TipErr te) {
   _tip_errs.remove(te);
-  if(_tip_errs.empty()){
+  if (_tip_errs.empty()) {
     ui->err_tip->clear();
 
     return;
@@ -320,8 +309,7 @@ void RegisterDialog::DelTipErr(TipErr te)
   showTip(_tip_errs.first(), false);
 }
 
-void RegisterDialog::ChangeTipPage()
-{
+void RegisterDialog::ChangeTipPage() {
   _countdown_timer->stop();
   ui->stackedWidget->setCurrentWidget(ui->page_2);
 
@@ -378,10 +366,8 @@ void RegisterDialog::on_sure_btn_clicked() {
                                       Modules::REGISTERMOD);
 }
 
-void RegisterDialog::on_return_btn_clicked()
-{
+void RegisterDialog::on_return_btn_clicked() {
   _countdown_timer->stop();
 
   emit sigSwitchLogin();
 }
-
