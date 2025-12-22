@@ -4,20 +4,20 @@
 
 VerifyGrpcClient::VerifyGrpcClient() {
   auto& gCfgMgr = ConfigMgr::Inst();
-  std::string host = gCfgMgr["VarifyServer"]["Host"];
-  std::string port = gCfgMgr["VarifyServer"]["Port"];
+  std::string host = gCfgMgr["VerifyServer"]["Host"];
+  std::string port = gCfgMgr["VerifyServer"]["Port"];
 
   _pool.reset(new RPCConPool(5, host, port));
 }
 
-message::GetVarifyRsp VerifyGrpcClient::GetVerifyCode(std::string email) {
+message::GetVerifyRsp VerifyGrpcClient::GetVerifyCode(std::string email) {
   grpc::ClientContext context;
-  message::GetVarifyRsp reply;
-  message::GetVarifyReq request;
+  message::GetVerifyRsp reply;
+  message::GetVerifyReq request;
   request.set_email(email);
 
   auto stub = _pool->getConnection();
-  grpc::Status status = stub->GetVarifyCode(&context, request, &reply);
+  grpc::Status status = stub->GetVerifyCode(&context, request, &reply);
   if (status.ok()) {
     _pool->returnConnection(std::move(stub));
 

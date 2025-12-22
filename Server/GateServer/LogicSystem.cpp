@@ -9,6 +9,7 @@
 #include "HttpConnection.h"
 #include "MysqlMgr.h"
 #include "RedisMgr.h"
+#include "StatusGrpcClient.h"
 #include "VerifyGrpcClient.h"
 #include "const.h"
 #include "message.pb.h"
@@ -29,7 +30,7 @@ LogicSystem::LogicSystem() {
     }
   });
 
-  RegPost("/get_varifycode", [](std::shared_ptr<HttpConnection> connection) {
+  RegPost("/get_verifycode", [](std::shared_ptr<HttpConnection> connection) {
     auto body_str =
         boost::beast::buffers_to_string(connection->_request.body().data());
     std::cout << "receive body is " << body_str << std::endl;
@@ -51,7 +52,7 @@ LogicSystem::LogicSystem() {
     }
 
     auto email = src_root["email"].asString();
-    message::GetVarifyRsp rsp =
+    message::GetVerifyRsp rsp =
         VerifyGrpcClient::GetInstance()->GetVerifyCode(email);
     std::cout << "email is " << email << std::endl;
 
@@ -100,23 +101,23 @@ LogicSystem::LogicSystem() {
     }
 
     // 先查找redis中email对应的验证码是否合理
-    std::string varify_code;
-    bool b_get_varify = RedisMgr::GetInstance()->Get(
-        CODEPREFIX + src_root["email"].asString(), varify_code);
-    if (!b_get_varify) {
-      std::cout << " get varify code expired" << std::endl;
+    std::string verify_code;
+    bool b_get_verify = RedisMgr::GetInstance()->Get(
+        CODEPREFIX + src_root["email"].asString(), verify_code);
+    if (!b_get_verify) {
+      std::cout << " get verify code expired" << std::endl;
 
-      root["error"] = ErrorCodes::VarifyExpired;
+      root["error"] = ErrorCodes::VerifyExpired;
       std::string jsonstr = root.toStyledString();
       boost::beast::ostream(connection->_response.body()) << jsonstr;
 
       return true;
     }
 
-    if (varify_code != src_root["varifycode"].asString()) {
-      std::cout << " varify code error" << std::endl;
+    if (verify_code != src_root["verifycode"].asString()) {
+      std::cout << " verify code error" << std::endl;
 
-      root["error"] = ErrorCodes::VarifyCodeErr;
+      root["error"] = ErrorCodes::VerifyCodeErr;
       std::string jsonstr = root.toStyledString();
       boost::beast::ostream(connection->_response.body()) << jsonstr;
 
@@ -139,7 +140,7 @@ LogicSystem::LogicSystem() {
     root["user"] = name;
     root["passwd"] = pwd;
     root["confirm"] = confirm;
-    root["varifycode"] = src_root["varifycode"].asString();
+    root["verifycode"] = src_root["verifycode"].asString();
     std::string jsonstr = root.toStyledString();
     boost::beast::ostream(connection->_response.body()) << jsonstr;
 
@@ -174,23 +175,23 @@ LogicSystem::LogicSystem() {
     auto pwd = src_root["passwd"].asString();
 
     // 先查找redis中email对应的验证码是否合理
-    std::string varify_code;
-    bool b_get_varify = RedisMgr::GetInstance()->Get(
-        CODEPREFIX + src_root["email"].asString(), varify_code);
-    if (!b_get_varify) {
-      std::cout << " get varify code expired" << std::endl;
+    std::string verify_code;
+    bool b_get_verify = RedisMgr::GetInstance()->Get(
+        CODEPREFIX + src_root["email"].asString(), verify_code);
+    if (!b_get_verify) {
+      std::cout << " get verify code expired" << std::endl;
 
-      root["error"] = ErrorCodes::VarifyExpired;
+      root["error"] = ErrorCodes::VerifyExpired;
       std::string jsonstr = root.toStyledString();
       boost::beast::ostream(connection->_response.body()) << jsonstr;
 
       return true;
     }
 
-    if (varify_code != src_root["varifycode"].asString()) {
-      std::cout << " varify code error" << std::endl;
+    if (verify_code != src_root["verifycode"].asString()) {
+      std::cout << " verify code error" << std::endl;
 
-      root["error"] = ErrorCodes::VarifyCodeErr;
+      root["error"] = ErrorCodes::VerifyCodeErr;
       std::string jsonstr = root.toStyledString();
       boost::beast::ostream(connection->_response.body()) << jsonstr;
 
@@ -227,7 +228,72 @@ LogicSystem::LogicSystem() {
     root["email"] = email;
     root["user"] = name;
     root["passwd"] = pwd;
-    root["varifycode"] = src_root["varifycode"].asString();
+    root["verifycode"] = src_root["verifycode"].asString();
+    std::string jsonstr = root.toStyledString();
+    boost::beast::ostream(connection->_response.body()) << jsonstr;
+
+    return true;
+  });
+
+  // 用户登录逻辑
+  RegPost("/user_login", [](std::shared_ptr<HttpConnection> connection) {
+    auto body_str =
+        boost::beast::buffers_to_string(connection->_request.body().data());
+    std::cout << "receive body is " << body_str << std::endl;
+
+    connection->_response.set(boost::beast::http::field::content_type,
+                              "text/json");
+
+    Json::Value root;
+    Json::Reader reader;
+    Json::Value src_root;
+    bool parse_success = reader.parse(body_str, src_root);
+    if (!parse_success) {
+      std::cout << "Failed to parse JSON data!" << std::endl;
+      root["error"] = ErrorCodes::Error_Json;
+      std::string jsonstr = root.toStyledString();
+      boost::beast::ostream(connection->_response.body()) << jsonstr;
+      return true;
+    }
+
+    auto email = src_root["email"].asString();
+    auto pwd = src_root["passwd"].asString();
+    UserInfo userInfo;
+
+    // 查询数据库判断用户名和密码是否匹配
+    bool pwd_valid = MysqlMgr::GetInstance()->CheckPwd(email, pwd, userInfo);
+    if (!pwd_valid) {
+      std::cout << " user pwd not match" << std::endl;
+
+      root["error"] = ErrorCodes::PasswdInvalid;
+      std::string jsonstr = root.toStyledString();
+      boost::beast::ostream(connection->_response.body()) << jsonstr;
+
+      return true;
+    }
+
+    // 查询StatusServer找到合适的连接
+    auto reply = StatusGrpcClient::GetInstance()->GetChatServer(userInfo.uid);
+    if (reply.error()) {
+      std::cout << " grpc get chat server failed, error is " << reply.error()
+                << std::endl;
+
+      root["error"] = ErrorCodes::RPCFailed;
+      std::string jsonstr = root.toStyledString();
+      boost::beast::ostream(connection->_response.body()) << jsonstr;
+
+      return true;
+    }
+
+    std::cout << "succeed to load userinfo uid is " << userInfo.uid
+              << std::endl;
+
+    root["error"] = 0;
+    root["email"] = email;
+    root["uid"] = userInfo.uid;
+    root["token"] = reply.token();
+    root["host"] = reply.host();
+    root["port"] = reply.port();
     std::string jsonstr = root.toStyledString();
     boost::beast::ostream(connection->_response.body()) << jsonstr;
 

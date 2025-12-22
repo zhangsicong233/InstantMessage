@@ -36,6 +36,7 @@ add_executable(gateserver
     RedisMgr.cpp
     MysqlDao.cpp
     MysqlMgr.cpp
+    StatusGrpcClient.cpp
     message.grpc.pb.cc
     message.pb.cc
 )

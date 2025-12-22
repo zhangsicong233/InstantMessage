@@ -22,11 +22,11 @@ class RPCConPool {
     for (std::size_t i = 0; i < poolsize; ++i) {
       std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel(
           host + ":" + port, grpc::InsecureChannelCredentials());
-      _connections.emplace(message::VarifyService::NewStub(channel));
+      _connections.emplace(message::VerifyService::NewStub(channel));
     }
   }
 
-  std::unique_ptr<message::VarifyService::Stub> getConnection() {
+  std::unique_ptr<message::VerifyService::Stub> getConnection() {
     std::unique_lock<std::mutex> lock(_mutex);
     _cond.wait(lock, [this]() {
       if (_b_stop) {
@@ -46,7 +46,7 @@ class RPCConPool {
     return context;
   }
 
-  void returnConnection(std::unique_ptr<message::VarifyService::Stub> context) {
+  void returnConnection(std::unique_ptr<message::VerifyService::Stub> context) {
     std::unique_lock<std::mutex> lock(_mutex);
     if (_b_stop) {
       return;
@@ -78,7 +78,7 @@ class RPCConPool {
   std::string _port;
   std::atomic<bool> _b_stop;
 
-  std::queue<std::unique_ptr<message::VarifyService::Stub>> _connections;
+  std::queue<std::unique_ptr<message::VerifyService::Stub>> _connections;
 
   std::mutex _mutex;
   std::condition_variable _cond;
@@ -88,7 +88,7 @@ class VerifyGrpcClient : public Singleton<VerifyGrpcClient> {
   friend class Singleton<VerifyGrpcClient>;
 
  public:
-  message::GetVarifyRsp GetVerifyCode(std::string email);
+  message::GetVerifyRsp GetVerifyCode(std::string email);
 
  private:
   VerifyGrpcClient();
